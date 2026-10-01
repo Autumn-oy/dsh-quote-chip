@@ -1,0 +1,26 @@
+{
+  "name": "dsh-quote-chip",
+  "version": "0.1.0",
+  "description": "DSH plugin: select conversation text and attach it as a locked, non-editable quote chip in the composer, or hand it to a subagent as a question.",
+  "type": "module",
+  "main": "dsh/index.js",
+  "exports": {
+    ".": "./dsh/index.js",
+    "./dsh": "./dsh/index.js",
+    "./client": "./dsh/client.js",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [],
+      "platform": "web",
+      "immediately": true
+    }
+  }
+}

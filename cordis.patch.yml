@@ -1,0 +1,5 @@
+# dsh-quote-chip bundle patch: mount the (deliberately empty) host half so the
+# bundle has a row and the browser half rides dsh.client.
+- insert:
+    - id: dsh-quote-chip
+      name: 'dsh-quote-chip'
