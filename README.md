@@ -95,8 +95,8 @@ preset 不能直接改 ship 的那份，得复制到 `$DSH_HOME/.agent-presets/<
 | 内容 | 它自己总结的（知道对话发生了什么，更准、可读） | 原文全量，但要主代理自己筛 |
 | 子代理花费 | 多跑一轮 | 0 |
 
-结论：**摘要由知道对话的它来写更划算**。日志仍然是**取证/核实**的备用通道（比如怀疑它美化、要看用户原话），
-工具是 `封装\tmp\read-session.mjs`（处理了日志是**多帧 zstd 拼接**、Node 只解第一帧的问题）。
+结论：**摘要由知道对话的它来写更划算**。日志仍然是**取证/核实**的备用通道（比如怀疑它美化、要看用户原话）；
+读日志的脚本要处理它**多帧 zstd 拼接**、Node 只解第一帧的问题（本仓库未附带）。
 
 **主代理自己派的子代理同样不受影响**：插件只给主代理写消息，主代理自己 `subagent()` 出来的孩子任务里
 也没有任何协议。
@@ -146,26 +146,35 @@ preset 不能直接改 ship 的那份，得复制到 `$DSH_HOME/.agent-presets/<
 dsh/index.js       host 半：故意为空，只为让 bundle 有一行、client 半被 dsh.client 发现
 dsh/client.js      全部功能：引用源注册 + 会话域桥 + 浮层工具条
 cordis.patch.yml   bundle patch：insert 一行 dsh-quote-chip
+test/smoke.mjs     离线自测（纯 node，不需要 DSH）
+LICENSE            MIT
 ```
 
-## 安装方式（当前部署）
+## 安装
 
-`E:\deepseek-harnessWS\data\profiles\web\package.json`：
+1. 克隆到任意本地目录：
 
-* `dependencies` 加 `"dsh-quote-chip": "link:E:/deepseek-harnessWS/data/plugins/dsh-quote-chip"`
-* `dsh.profile.bundles` 加 `"dsh-quote-chip"`
+   ```powershell
+   git clone https://github.com/Autumn-oy/dsh-quote-chip.git
+   ```
 
-然后：
+2. 编辑 `$DSH_HOME/profiles/web/package.json`（`$DSH_HOME` 为 DSH 数据目录，`dsh --profile web --dump-config`
+   打印的配置里能看到它在哪）：
 
-```powershell
-dsh plugin --profile web install          # 或 profile 目录里 pnpm install
-dsh --profile web --dump-config           # 预检：组合树里应出现 dsh-quote-chip
-# 重启 dsh web（设置 → 本地服务 → 重启，或 D:\deepseekHarness\restart-dsh.cmd）
-```
+   * `dependencies` 加 `"dsh-quote-chip": "link:<克隆目录>/dsh-quote-chip"`
+   * `dsh.profile.bundles` 加 `"dsh-quote-chip"`
+
+3. 安装并预检，然后重启 dsh web：
+
+   ```powershell
+   dsh plugin --profile web install          # 或在 profile 目录里 pnpm install
+   dsh --profile web --dump-config           # 预检：组合树里应出现 dsh-quote-chip
+   # 重启：设置 → 本地服务 → 重启
+   ```
 
 ## 回滚
 
-1. 从 `E:\deepseek-harnessWS\data\profiles\web\package.json.bak-quotechip-*` 恢复 `package.json`；
+1. 恢复 `package.json`（改之前自己留的 `.bak-*`，或手动删掉上一节加的两处）；
 2. 同一个目录 `pnpm install`；
 3. 重启 dsh web。
 
@@ -174,11 +183,16 @@ dsh --profile web --dump-config           # 预检：组合树里应出现 dsh-q
 
 ## 离线自测
 
-`E:\deepseek-harnessWS\封装\tmp\quote-chip-smoke2.mjs`（node 直接跑，不需要 DSH）：
+`test/smoke.mjs`（`node` 直接跑，不需要 DSH，路径相对本仓库解析）：
 
 ```powershell
-node E:\deepseek-harnessWS\封装\tmp\quote-chip-smoke2.mjs
+node test/smoke.mjs
 ```
 
-用假的 React/DOM/宿主环境验证 4 个场景：有 inputTriggers 走芯片、无 inputTriggers 降级文本、
-向子代理提问的组消息与提交、输入框内选区不弹浮条。
+用假的 React/DOM/宿主环境验证 10 组场景：有 inputTriggers 走芯片、无 inputTriggers 降级文本、
+向子代理提问的组消息与提交、「主代理介入」简报、草稿非空拒绝覆盖、输入框内选区不弹浮条、
+子代理会话的浮条降级与自我保护等。全部断言通过会打印 `ALL CHECKS PASSED`。
+
+## License
+
+[MIT](LICENSE) © 2026 Autumn-oy
